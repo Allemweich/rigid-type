@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\TestCase;
 use Tests\Entities\Address;
 use Tests\Entities\Invoice;
 
@@ -33,18 +33,61 @@ class RigidTypeTest extends TestCase
         $this->assertEquals(16, $invoice->address->number);
     }
 
-    public function testThrowsExceptionOnWrongMemberType(): void
+    public function testRespectNullableTypes(): void
     {
+        $input = [
+            'amount'      => 25,
+            'description' => null,
+            'article'     => null,
+            'address'     => null,
+        ];
 
+        $invoice = new Invoice($input);
+
+        $this->assertEquals(25, $invoice->amount);
+        $this->assertNull($invoice->address);
     }
 
-    public function testMemberOfRigidTypeHasExpectedFields(): void
+    public function testThrowExceptionOnIncompleteInput(): void
     {
+        $input = ['amount' => 25];
 
+        $this->expectExceptionMessage('Invoice requires additional fields: description, article, address');
+
+        new Invoice($input);
+    }
+
+    public function testThrowsExceptionOnWrongMemberType(): void
+    {
+        $input = [
+            'amount' => 25,
+            'description' => 'your purchase from easybell',
+            'article' => 453,
+            'address' => (object)[
+                'street' => 'Schönweg',
+                'number' => 16,
+            ],
+        ];
+
+        $this->expectExceptionMessage('Invoice::$article must be object or null, int used');
+
+        new Invoice($input);
     }
 
     public function testThrowExceptionWhenCreatingMemberOfRigidTypeWithWrongPropertyType(): void
     {
+        $input = [
+            'amount' => 25,
+            'description' => 'your purchase from easybell',
+            'article' => (object)[],
+            'address' => (object)[
+                'street' => 16,
+                'number' => 'Schönweg',
+            ],
+        ];
 
+        $this->expectExceptionMessage('Address::$number must be int, string used');
+
+        new Invoice($input);
     }
 }

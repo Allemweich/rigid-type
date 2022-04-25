@@ -3,13 +3,15 @@
 namespace EasybellLibs\RigidType;
 
 use EasybellLibs\RigidType\Exceptions\TypeValidationException;
-use Illuminate\Support\Arr;
 use ReflectionClass;
 use ReflectionProperty;
 use TypeError;
 
 abstract class RigidType
 {
+    /**
+     * @throws TypeValidationException
+     */
     public function __construct($genericData, bool $checkCompleteness = true)
     {
         $input = $this->getInputObject($genericData);
@@ -32,15 +34,16 @@ abstract class RigidType
 
     private function ensureInputContainsAllProperties(array $properties, object $input): void
     {
-        $inputFields = collect($input)->keys();
-        $requiredFields = collect($properties)->pluck('name');
+        $inputFields = array_keys(get_object_vars($input));
+        $requiredFields = array_column($properties, 'name');
+        $missingFields = array_diff($requiredFields, $inputFields);
 
-        $missingFields = $requiredFields->diff($inputFields);
-
-        throw_if($missingFields->isNotEmpty(), new TypeValidationException(json_encode([
-            'error' => 'Entity ' . __CLASS__ . ' requires additional fields: ' . $missingFields->join(', '),
-            'input' => $input
-        ])));
+        if(count($missingFields) > 0) {
+            throw new TypeValidationException(json_encode([
+                'error' => 'Entity ' . static::class. ' requires additional fields: ' . implode(', ', $missingFields),
+                'input' => $input,
+            ]));
+        }
     }
 
     private function takeValues(array $properties, object $input): void
@@ -50,11 +53,11 @@ abstract class RigidType
         }
 
         foreach ($properties as $property) {
-            $value = data_get($input, $property->name);
+            $value = $input->{$property->getName()} ?? null;
 
             $type = $property->getType()->getName();
 
-            if (is_a($type, RigidType::class, true)) {
+            if (is_a($type, RigidType::class, true) && $value !== null) {
                 $value = new $type($value);
             }
 
@@ -68,7 +71,7 @@ abstract class RigidType
             return $genericData;
         }
 
-        if (is_array($genericData) && Arr::isAssoc($genericData)) {
+        if (is_array($genericData) && $this->isAssocArray($genericData)) {
             return (object)$genericData;
         }
 
@@ -76,6 +79,13 @@ abstract class RigidType
             'error' => 'Input must be associative array or object',
             'input' => $genericData
         ]));
+    }
+
+    private function isAssocArray(array $array): bool
+    {
+        $keys = array_keys($array);
+
+        return array_keys($keys) !== $keys;
     }
 }
 
