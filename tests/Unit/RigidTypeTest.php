@@ -14,11 +14,11 @@ class Address extends RigidType
 
 class Invoice extends RigidType
 {
-    public          $uuid; // do NOT add a type here!
     public int      $amount;
     public ?string  $description;
     public ?object  $article;
     public ?Address $address;
+    public          $untyped;
 }
 
 class RigidTypeTest extends TestCase
@@ -26,7 +26,6 @@ class RigidTypeTest extends TestCase
     public function testHasExpectedFields(): void
     {
         $input = [
-            'uuid'        => 123,
             'amount'      => 25,
             'description' => 'your purchase from easybell',
             'article'     => (object)['number' => 453],
@@ -34,6 +33,7 @@ class RigidTypeTest extends TestCase
                 'street' => 'Schönweg',
                 'number' => 16,
             ],
+            'untyped'     => 'sometimes I am a string'
         ];
 
         $invoice = new Invoice($input);
@@ -41,22 +41,22 @@ class RigidTypeTest extends TestCase
         $this->assertTrue($invoice->article instanceof stdClass);
         $this->assertTrue($invoice->address instanceof Address);
 
-        $this->assertSame($input['uuid'],            $invoice->uuid);
         $this->assertSame($input['amount'],          $invoice->amount);
         $this->assertSame($input['description'],     $invoice->description);
         $this->assertSame($input['article']->number, $invoice->article->number);
         $this->assertSame($input['address']->street, $invoice->address->street);
         $this->assertSame($input['address']->number, $invoice->address->number);
+        $this->assertSame($input['untyped'],         $invoice->untyped);
     }
 
     public function testRespectNullableTypes(): void
     {
         $input = [
-            'uuid'        => 123,
             'amount'      => 25,
             'description' => null,
             'article'     => null,
             'address'     => null,
+            'untyped'     => null,
         ];
 
         $invoice = new Invoice($input);
@@ -67,9 +67,9 @@ class RigidTypeTest extends TestCase
 
     public function testThrowExceptionOnIncompleteInput(): void
     {
-        $input = ['uuid' => 123, 'amount' => 25];
+        $input = ['amount' => 25];
 
-        $this->expectExceptionMessage('Invoice requires additional fields: description, article, address');
+        $this->expectExceptionMessage('Invoice requires additional fields: description, article, address, untyped');
 
         new Invoice($input);
     }
@@ -77,7 +77,6 @@ class RigidTypeTest extends TestCase
     public function testThrowsExceptionOnWrongMemberType(): void
     {
         $input = [
-            'uuid'        => 123,
             'amount'      => 25,
             'description' => 'your purchase from easybell',
             'article'     => 453,
@@ -85,6 +84,7 @@ class RigidTypeTest extends TestCase
                 'street' => 'Schönweg',
                 'number' => 16,
             ],
+            'untyped'     => 'sometimes I am a string'
         ];
 
         $this->expectExceptionMessage('Invoice::$article must be object or null, int used');
@@ -95,14 +95,14 @@ class RigidTypeTest extends TestCase
     public function testThrowExceptionWhenCreatingMemberOfRigidTypeWithWrongPropertyType(): void
     {
         $input = [
-            'uuid'        => 123,
             'amount'      => 25,
-            'description' => 'your purchase from easybell',
-            'article'     => (object)[],
+            'description' => null,
+            'article'     => null,
             'address'     => (object)[
                 'street' => 16,
                 'number' => 'Schönweg',
             ],
+            'untyped'     => null,
         ];
 
         $this->expectExceptionMessage('Address::$number must be int, string used');
