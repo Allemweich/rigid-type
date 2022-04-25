@@ -53,15 +53,16 @@ abstract class RigidType
         }
 
         foreach ($properties as $property) {
-            $value = $input->{$property->getName()} ?? null;
-
+            /** @var ReflectionProperty $property */
+            $name = $property->getName();
             $type = ($property->getType()) ? $property->getType()->getName() : null;
+            $value = $input->{$name} ?? null;
 
-            if (is_a($type, RigidType::class, true) && $value !== null) {
+            if ($value !== null && is_a($type, RigidType::class, true)) {
                 $value = new $type($value);
             }
 
-            $this->{$property->getName()} = $value;
+            $this->{$name} = $value;
         }
     }
 
