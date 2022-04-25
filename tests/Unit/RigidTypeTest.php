@@ -61,8 +61,11 @@ class RigidTypeTest extends TestCase
 
         $invoice = new Invoice($input);
 
-        $this->assertEquals(25, $invoice->amount);
+        $this->assertSame($input['amount'], $invoice->amount);
+        $this->assertNull($invoice->description);
+        $this->assertNull($invoice->article);
         $this->assertNull($invoice->address);
+        $this->assertNull($invoice->untyped);
     }
 
     public function testThrowExceptionOnIncompleteInput(): void
@@ -72,6 +75,19 @@ class RigidTypeTest extends TestCase
         $this->expectExceptionMessage('Invoice requires additional fields: description, article, address, untyped');
 
         new Invoice($input);
+    }
+
+    public function testDoNotThrowExceptionOnIncompleteInputWhenAllowed(): void
+    {
+        $input = ['amount' => 25];
+
+        $invoice = new Invoice($input, false);
+
+        $this->assertSame($input['amount'], $invoice->amount);
+        $this->assertNull($invoice->description);
+        $this->assertNull($invoice->article);
+        $this->assertNull($invoice->address);
+        $this->assertNull($invoice->untyped);
     }
 
     public function testThrowsExceptionOnWrongMemberType(): void
