@@ -6,6 +6,7 @@ use EasybellLibs\RigidType\RigidType;
 
 class Invoice extends RigidType
 {
+    public          $uuid;
     public int      $amount;
     public ?string  $description;
     public ?object  $article;

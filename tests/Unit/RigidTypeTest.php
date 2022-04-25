@@ -11,10 +11,11 @@ class RigidTypeTest extends TestCase
     public function testHasExpectedFields(): void
     {
         $input = [
-            'amount' => 25,
+            'uuid'        => 123,
+            'amount'      => 25,
             'description' => 'your purchase from easybell',
-            'article' => (object)['number' => 453],
-            'address' => (object)[
+            'article'     => (object)['number' => 453],
+            'address'     => (object)[
                 'street' => 'Schönweg',
                 'number' => 16,
             ],
@@ -36,6 +37,7 @@ class RigidTypeTest extends TestCase
     public function testRespectNullableTypes(): void
     {
         $input = [
+            'uuid'        => 123,
             'amount'      => 25,
             'description' => null,
             'article'     => null,
@@ -50,7 +52,7 @@ class RigidTypeTest extends TestCase
 
     public function testThrowExceptionOnIncompleteInput(): void
     {
-        $input = ['amount' => 25];
+        $input = ['uuid' => 123, 'amount' => 25];
 
         $this->expectExceptionMessage('Invoice requires additional fields: description, article, address');
 
@@ -60,10 +62,11 @@ class RigidTypeTest extends TestCase
     public function testThrowsExceptionOnWrongMemberType(): void
     {
         $input = [
-            'amount' => 25,
+            'uuid'        => 123,
+            'amount'      => 25,
             'description' => 'your purchase from easybell',
-            'article' => 453,
-            'address' => (object)[
+            'article'     => 453,
+            'address'     => (object)[
                 'street' => 'Schönweg',
                 'number' => 16,
             ],
@@ -77,10 +80,11 @@ class RigidTypeTest extends TestCase
     public function testThrowExceptionWhenCreatingMemberOfRigidTypeWithWrongPropertyType(): void
     {
         $input = [
-            'amount' => 25,
+            'uuid'        => 123,
+            'amount'      => 25,
             'description' => 'your purchase from easybell',
-            'article' => (object)[],
-            'address' => (object)[
+            'article'     => (object)[],
+            'address'     => (object)[
                 'street' => 16,
                 'number' => 'Schönweg',
             ],

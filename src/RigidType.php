@@ -55,7 +55,7 @@ abstract class RigidType
         foreach ($properties as $property) {
             $value = $input->{$property->getName()} ?? null;
 
-            $type = $property->getType()->getName();
+            $type = ($property->getType()) ? $property->getType()->getName() : null;
 
             if (is_a($type, RigidType::class, true) && $value !== null) {
                 $value = new $type($value);
