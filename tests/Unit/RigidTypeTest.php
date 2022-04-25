@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use EasybellLibs\RigidType\RigidType;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 class Address extends RigidType
 {
@@ -13,7 +14,7 @@ class Address extends RigidType
 
 class Invoice extends RigidType
 {
-    public          $uuid;
+    public          $uuid; // do NOT add a type here!
     public int      $amount;
     public ?string  $description;
     public ?object  $article;
@@ -37,15 +38,15 @@ class RigidTypeTest extends TestCase
 
         $invoice = new Invoice($input);
 
-        $this->assertTrue($invoice instanceof Invoice);
-        $this->assertTrue($invoice->article instanceof \stdClass);
+        $this->assertTrue($invoice->article instanceof stdClass);
         $this->assertTrue($invoice->address instanceof Address);
 
-        $this->assertEquals(25, $invoice->amount);
-        $this->assertEquals('your purchase from easybell', $invoice->description);
-        $this->assertEquals(453, $invoice->article->number);
-        $this->assertEquals('Schönweg', $invoice->address->street);
-        $this->assertEquals(16, $invoice->address->number);
+        $this->assertSame($input['uuid'],            $invoice->uuid);
+        $this->assertSame($input['amount'],          $invoice->amount);
+        $this->assertSame($input['description'],     $invoice->description);
+        $this->assertSame($input['article']->number, $invoice->article->number);
+        $this->assertSame($input['address']->street, $invoice->address->street);
+        $this->assertSame($input['address']->number, $invoice->address->number);
     }
 
     public function testRespectNullableTypes(): void
