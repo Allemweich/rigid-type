@@ -2,9 +2,23 @@
 
 namespace Tests\Unit;
 
+use EasybellLibs\RigidType\RigidType;
 use PHPUnit\Framework\TestCase;
-use Tests\Entities\Address;
-use Tests\Entities\Invoice;
+
+class Address extends RigidType
+{
+    public string $street;
+    public int    $number;
+}
+
+class Invoice extends RigidType
+{
+    public          $uuid;
+    public int      $amount;
+    public ?string  $description;
+    public ?object  $article;
+    public ?Address $address;
+}
 
 class RigidTypeTest extends TestCase
 {
