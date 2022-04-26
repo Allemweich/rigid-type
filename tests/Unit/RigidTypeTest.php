@@ -8,7 +8,7 @@ use stdClass;
 
 class Credentials extends RigidType
 {
-    protected bool $explicitNulls = false;
+    protected bool $forceCompleteInput = false;
 
     public string  $username;
     public ?string $password;

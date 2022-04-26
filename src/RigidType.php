@@ -10,10 +10,12 @@ use TypeError;
 abstract class RigidType
 {
     /**
-     * If the flag below is true, inputs with missing fields will not be accepted, i.e. nulls must be sent explicitly.
-     * If the flag is false, then missing fields will be set to null automatically. (only if their type allows it).
+     * @var bool $forceCompleteInput
+     * Defaults to true, can be set per subclass.
+     * If the flag is true, incomplete inputs will be rejected.
+     * If the flag is false, missing fields will be set to null, if their type allows it.
      */
-    protected bool $explicitNulls = true;
+    protected bool $forceCompleteInput = true;
 
     /**
      * @throws TypeValidationException
@@ -24,7 +26,7 @@ abstract class RigidType
 
         $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
 
-        if ($this->explicitNulls) {
+        if ($this->forceCompleteInput) {
             $this->ensureInputContainsAllProperties($properties, $input);
         }
 
