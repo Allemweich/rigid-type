@@ -6,6 +6,14 @@ use EasybellLibs\RigidType\RigidType;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+class Credentials extends RigidType
+{
+    protected bool $explicitNulls = false;
+
+    public string  $username;
+    public ?string $password;
+}
+
 class Address extends RigidType
 {
     public string $street;
@@ -23,7 +31,7 @@ class Invoice extends RigidType
 
 class RigidTypeTest extends TestCase
 {
-    public function testHasExpectedFields(): void
+    public function testInstanceHasExpectedFieldsAndValues(): void
     {
         $input = [
             'amount'      => 25,
@@ -68,7 +76,7 @@ class RigidTypeTest extends TestCase
         $this->assertNull($invoice->untyped);
     }
 
-    public function testThrowExceptionOnIncompleteInput(): void
+    public function testThrowExceptionOnIncompleteInputWhenStrict(): void
     {
         $input = ['amount' => 25];
 
@@ -77,35 +85,35 @@ class RigidTypeTest extends TestCase
         new Invoice($input);
     }
 
-    public function testDoNotThrowExceptionOnIncompleteInputWhenAllowed(): void
+    public function testDoNotThrowExceptionOnIncompleteInputWhenNotStrict(): void
     {
-        $input = ['amount' => 25];
+        $input = ['username' => 'first.last'];
 
-        $invoice = new Invoice($input, false);
+        $credentials = new Credentials($input);
 
-        $this->assertSame($input['amount'], $invoice->amount);
-        $this->assertNull($invoice->description);
-        $this->assertNull($invoice->article);
-        $this->assertNull($invoice->address);
-        $this->assertNull($invoice->untyped);
+        $this->assertSame($input['username'], $credentials->username);
+        $this->assertNull($credentials->password);
+    }
+
+    public function testThrowExceptionForNonNullableTypeOnMissingInputEvenWhenNotStrict(): void
+    {
+        $input = ['password' => 'password123'];
+
+        $this->expectExceptionMessage('Credentials::$username must be string, null used');
+
+        new Credentials($input);
     }
 
     public function testThrowsExceptionOnWrongMemberType(): void
     {
         $input = [
-            'amount'      => 25,
-            'description' => 'your purchase from easybell',
-            'article'     => 453,
-            'address'     => (object)[
-                'street' => 'Schönweg',
-                'number' => 16,
-            ],
-            'untyped'     => 'sometimes I am a string'
+            'username' => 'first.last',
+            'password' => (object)[],
         ];
 
-        $this->expectExceptionMessage('Invoice::$article must be object or null, int used');
+        $this->expectExceptionMessage('Credentials::$password must be string or null, stdClass used');
 
-        new Invoice($input);
+        new Credentials($input);
     }
 
     public function testThrowExceptionWhenCreatingMemberOfRigidTypeWithWrongPropertyType(): void
@@ -124,5 +132,35 @@ class RigidTypeTest extends TestCase
         $this->expectExceptionMessage('Address::$number must be int, string used');
 
         new Invoice($input);
+    }
+
+    public function invalidInput(): array
+    {
+        return [
+            [null],
+            [[]],
+            ['first.last', 'password123']
+        ];
+    }
+
+    /** @dataProvider invalidInput */
+    public function testRejectInvalidInput($input): void
+    {
+        $this->expectExceptionMessage('Input must be associative array or object');
+
+        new Credentials($input);
+    }
+
+    public function testAssociativeArrayAndObjectInputLeadToSameResult(): void
+    {
+        $input = [
+            'username' => 'user',
+            'password' => 'pass',
+        ];
+
+        $this->assertEquals(
+            new Credentials($input),
+            new Credentials((object)$input)
+        );
     }
 }

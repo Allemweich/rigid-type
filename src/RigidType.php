@@ -10,15 +10,21 @@ use TypeError;
 abstract class RigidType
 {
     /**
+     * If the flag below is true, inputs with missing fields will not be accepted, i.e. nulls must be sent explicitly.
+     * If the flag is false, then missing fields will be set to null automatically. (only if their type allows it).
+     */
+    protected bool $explicitNulls = true;
+
+    /**
      * @throws TypeValidationException
      */
-    public function __construct($genericData, bool $checkCompleteness = true)
+    public function __construct($genericData)
     {
         $input = $this->getInputObject($genericData);
 
         $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
 
-        if ($checkCompleteness) {
+        if ($this->explicitNulls) {
             $this->ensureInputContainsAllProperties($properties, $input);
         }
 
@@ -54,15 +60,16 @@ abstract class RigidType
 
         foreach ($properties as $property) {
             /** @var ReflectionProperty $property */
-            $name = $property->getName();
-            $type = ($property->getType()) ? $property->getType()->getName() : null;
-            $value = $input->{$name} ?? null;
+            $fieldName = $property->getName();
+            $fieldType = ($property->getType()) ? $property->getType()->getName() : null;
 
-            if ($value !== null && is_a($type, RigidType::class, true)) {
-                $value = new $type($value);
+            $value = $input->{$fieldName} ?? null;
+
+            if ($value !== null && is_a($fieldType, RigidType::class, true)) {
+                $value = new $fieldType($value);
             }
 
-            $this->{$name} = $value;
+            $this->{$fieldName} = $value;
         }
     }
 
