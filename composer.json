@@ -1,0 +1,39 @@
+{
+    "name": "allemweich/rigid-type",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "William Raendchen",
+            "email": "william.raendchen@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "ext-json": "*",
+        "illuminate/collections": "^8.83",
+        "infection/infection": "^0.26.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5 | ^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Allemweich\\RigidType\\": "src/"
+        },
+        "classmap": [
+            "src/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "infection/extension-installer": false
+        }
+    }
+}
